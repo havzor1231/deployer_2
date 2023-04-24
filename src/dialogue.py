@@ -1,5 +1,3 @@
-
-
 import requests
 from enum import Enum
 from emora_stdm import DialogueFlow, Macro, Ngrams
@@ -13,9 +11,9 @@ from src.utils.utils import MacroGPTJSON, MacroNLG, gpt_completion
 from src.utils import utils
 import openai
 
-
 team_dict = json.load(open('resources/json/team_to_id_lower.json'))
 home_vars = {}
+
 
 class V(Enum):
     key_observations1 = 0  # str
@@ -47,6 +45,7 @@ class MacroExplainStat(Macro):
         # print(list_stats, stat_of_interest)
         return output
 
+
 def get_observations_prompt(vars: Dict[str, Any]):
     team1 = vars[V.team1.name]
     team2 = vars[V.team2.name]
@@ -55,6 +54,7 @@ def get_observations_prompt(vars: Dict[str, Any]):
     prompt = "Get the key events of the English Premier League game between {} and {} on {}.".format(team1, team2, date)
     # print(prompt)
     return prompt
+
 
 def get_key_observations(vars: Dict[str, Any]):
     observations1 = vars[V.key_observations1.name]
@@ -87,16 +87,18 @@ class MacroUserVisited(Macro):
         firstname = vars['FIRSTNAME']
         return not vars.get(firstname, False)
 
+
 class MacroStoreVisit(Macro):
     def run(self, ngrams: Ngrams, vars: Dict[str, Any], args: List[str]):
         firstname = vars['FIRSTNAME']
         if not vars.get(firstname):
             vars[firstname] = {}
             # print('stored new visitor')
-        else:
-            # print("visitor already seen")
+
+        # print("visitor already seen")
         # print(vars)
         return True
+
 
 def get_match(vars: Dict[str, Any]):
     team1 = vars[V.team1.name]
@@ -120,7 +122,6 @@ def get_match(vars: Dict[str, Any]):
     return True
 
 
-
 class MacroVisits(Macro):
     def run(self, ngrams: Ngrams, vars: Dict[str, Any], args: List[Any]):
         vn = 'VISITS'
@@ -132,10 +133,13 @@ class MacroVisits(Macro):
             count = vars[vn] + 1
             vars[vn] = count
             match count:
-                case 2: return 'What do you want to talk about?'
-                case 3: return 'What brings you here today?'
+                case 2:
+                    return 'What do you want to talk about?'
+                case 3:
+                    return 'What brings you here today?'
                 case default:
                     return 'What do you want to talk about?'
+
 
 class MacroSetKeyStatFavPlayer(Macro):
     def run(self, ngrams: Ngrams, vars: Dict[str, Any], args: List[Any]):
@@ -145,13 +149,13 @@ class MacroSetKeyStatFavPlayer(Macro):
         date = vars["DATE"]
 
         full_ex = {"TEAM1": "Manchester United", "TEAM2": "Newcastle", "DATE": "2022-03-04",
-                  "KEY_STATS_FAV_PLAYER": "Final score Nottingham Forest 1 - 2 Liverpool \n "
-                               "Goals: Nottingham Forest: Lewis Grabban (penalty, 59') Liverpool: Sadio Mane (19'), Mohamed Salah (75') \n "
-                               "Possession: Nottingham Forest 35% - 65% Liverpool \n"
-                               "Shots (on target): Nottingham Forest 7 (2) - 16 (5) Liverpool\n"
-                               "Corners: Nottingham Forest 4 - 8 Liverpool \n"
-                               "Yellow cards: Nottingham Forest 2 - 1 Liverpool \n"
-                               "Red cards: None"}
+                   "KEY_STATS_FAV_PLAYER": "Final score Nottingham Forest 1 - 2 Liverpool \n "
+                                           "Goals: Nottingham Forest: Lewis Grabban (penalty, 59') Liverpool: Sadio Mane (19'), Mohamed Salah (75') \n "
+                                           "Possession: Nottingham Forest 35% - 65% Liverpool \n"
+                                           "Shots (on target): Nottingham Forest 7 (2) - 16 (5) Liverpool\n"
+                                           "Corners: Nottingham Forest 4 - 8 Liverpool \n"
+                                           "Yellow cards: Nottingham Forest 2 - 1 Liverpool \n"
+                                           "Red cards: None"}
 
         prompt = f'{fav_player} played his most recent game in {team1} vs. {team2} on {date}. ' \
                  f'Get the final score and key statistics of the game.' \
@@ -188,10 +192,10 @@ class MacroSetKeyObsFavPlayer(Macro):
                    }
 
         empty_ex = {"TEAM1": "", "TEAM2": "", "DATE": "",
-                   "FINAL_SCORE": "",
-                   "KEY_OBS_RECENT_1": "",
-                   "KEY_OBS_RECENT_2": "",
-                   "KEY_OBS_RECENT_3": ""
+                    "FINAL_SCORE": "",
+                    "KEY_OBS_RECENT_1": "",
+                    "KEY_OBS_RECENT_2": "",
+                    "KEY_OBS_RECENT_3": ""
                     }
 
         examples = f'{full_ex} or {empty_ex} if unavailable' if empty_ex else full_ex
@@ -206,20 +210,19 @@ class MacroSetKeyObsFavPlayer(Macro):
 
         new_output = ""
         for i, char in enumerate(output):
-            if char == '"' and i < len(output) - 1 and output[i+1] == 's':
+            if char == '"' and i < len(output) - 1 and output[i + 1] == 's':
                 new_output += "'"
             else:
                 new_output += char
 
         # print(new_output)
 
-
         d = json.loads(new_output)
         # print(d)
         pass
 
 
-#UNFAMILIAR MACROS
+# UNFAMILIAR MACROS
 class MacroGetInterested(Macro):
     def run(self, ngrams: Ngrams, vars: Dict[str, Any], args: List[Any]):
         interested = vars[V.interested.name][0]
@@ -233,75 +236,83 @@ class MacroGetInterested(Macro):
 
 macros = {
     'VISITS': MacroVisits(),
-    'SET_MATCH': MacroGPTJSON("What soccer match from the Premier League is the user interested in? If the two teams or date is not included, return False.",
-                            {V.team1.name: "Manchester United", V.team2.name: "Newcastle", V.date.name: "2022-03-04"},
-                            {V.team1.name: "Nottingham Forest", V.team2.name: "Liverpool", V.date.name: "2022-01-31"}
-                            ),
+    'SET_MATCH': MacroGPTJSON(
+        "What soccer match from the Premier League is the user interested in? If the two teams or date is not included, return False.",
+        {V.team1.name: "Manchester United", V.team2.name: "Newcastle", V.date.name: "2022-03-04"},
+        {V.team1.name: "Nottingham Forest", V.team2.name: "Liverpool", V.date.name: "2022-01-31"}
+        ),
     'GET_MATCH': MacroNLG(get_match),
     'GET_NAME': MacroGetName(),
     'VISITED_BEFORE': MacroUserVisited(),
     'STORE_VISIT': MacroStoreVisit(),
     'EXPLAIN_STAT': MacroExplainStat(),
-    'SET_KEY_STATISTICS': MacroGPTJSON("What soccer match from the Premier League is the user interested in? Get the key statistics of the stated match.",
-                                         {"TEAM1": "Manchester United", "TEAM2": "Newcastle", "DATE": "2022-03-04",
-                                          "KEY_STATS": "Final score: Nottingham Forest 1 - 2 Liverpool \n "
-                                                       "Goals: Nottingham Forest: Lewis Grabban (penalty, 59') Liverpool: Sadio Mane (19'), Mohamed Salah (75') \n "
-                                                       "Possession: Nottingham Forest 35% - 65% Liverpool \n"
-                                                       "Shots (on target): Nottingham Forest 7 (2) - 16 (5) Liverpool\n"
-                                                       "Corners: Nottingham Forest 4 - 8 Liverpool \n"
-                                                       "Yellow cards: Nottingham Forest 2 - 1 Liverpool \n"
-                                                       "Red cards: None"}),
-    'SET_KEY_OBSERVATIONS': MacroGPTJSON("What soccer match from the Premier League is the user interested in? Get the three most important moments of the stated match.",
-                                         {V.team1.name: "Manchester United", V.team2.name: "Newcastle", V.date.name: "2022-03-04",
-                                          V.key_observations1.name: "Marcus Rashford scored the most crucial goal of the game.",
-                                          V.key_observations2.name: "Casemiro scored the first goal, which set the pace of the game.",
-                                          V.key_observations3.name: "Casemiro was assisted by Shaw to score the goal."}),
+    'SET_KEY_STATISTICS': MacroGPTJSON(
+        "What soccer match from the Premier League is the user interested in? Get the key statistics of the stated match.",
+        {"TEAM1": "Manchester United", "TEAM2": "Newcastle", "DATE": "2022-03-04",
+         "KEY_STATS": "Final score: Nottingham Forest 1 - 2 Liverpool \n "
+                      "Goals: Nottingham Forest: Lewis Grabban (penalty, 59') Liverpool: Sadio Mane (19'), Mohamed Salah (75') \n "
+                      "Possession: Nottingham Forest 35% - 65% Liverpool \n"
+                      "Shots (on target): Nottingham Forest 7 (2) - 16 (5) Liverpool\n"
+                      "Corners: Nottingham Forest 4 - 8 Liverpool \n"
+                      "Yellow cards: Nottingham Forest 2 - 1 Liverpool \n"
+                      "Red cards: None"}),
+    'SET_KEY_OBSERVATIONS': MacroGPTJSON(
+        "What soccer match from the Premier League is the user interested in? Get the three most important moments of the stated match.",
+        {V.team1.name: "Manchester United", V.team2.name: "Newcastle", V.date.name: "2022-03-04",
+         V.key_observations1.name: "Marcus Rashford scored the most crucial goal of the game.",
+         V.key_observations2.name: "Casemiro scored the first goal, which set the pace of the game.",
+         V.key_observations3.name: "Casemiro was assisted by Shaw to score the goal."}),
     'GET_KEY_OBSERVATIONS': MacroNLG(get_key_observations),
     'SET_FAV_TEAM': MacroGPTJSON("What is the user's favorite Premier League team? "
-                                  "Give three biased reasons why Manchester City is superior than the user's favorite team. "
-                                  "If their favorite team is different, be condescending.",
-                                  {'USER_FAV_TEAM': "Arsenal",
-                                   'REASON1': "They have strong attacking plays that are fun to watch.",
-                                   'REASON2': "They always have the mindset of a champion and win important matches.",
-                                   'REASON3': "Especially when they have a lead, the defense is stellar."}),
-    'SET_FAV_PLAYER': MacroGPTJSON("Who is the speaker's favorite soccer player? Give the most recent Premier League game the player has played in.",
-                                  {'USER_FAV_PLAYER': "Marcus Rashford",
-                                   'DATE': "2022-03-04",
-                                   'TEAM1': "Manchester United",
-                                   'TEAM2': "Tottenham"}),
-    'SET_KEY_OBS_FAV_PLAYER': MacroGPTJSON("Who is the speaker's favorite soccer player? Get the most recent game the favorite player has played in the Premier League. Give the key observations of the game and get the final score.",
-                                  {'USER_FAV_PLAYER': "Marcus Rashford",
-                                   'FINAL_SCORE': "This is the game where Manchester United won 3-1.",
-                                   "KEY_OBS_1": "Marcus Rashford scored the most crucial goal of the game.",
-                                   "KEY_OBS_2": "Casemiro scored the first goal, which set the pace of the game.",
-                                   "KEY_OBS_3": "Casemiro was assisted by Shaw to score the goal."
-                                   }),
-    'SET_TEAM_KEY_PLAYERS': MacroGPTJSON("What team is the user interested in? Who are the top two key players on the team currently, and why? Who is the top player of all time on the team historically, and why? Give a passionate answer.",
-                                        {'TOP_TEAM': "Tottenham Hotspurs",
-                                         'KEY_PLAYER_1': "Harry Kane is the most crucial forward because he converts the shots in goals.",
-                                         'KEY_PLAYER_2': "With strong command of his penalty area and the goal line, Hugo Lloris  kept 34 clean sheets in 100+ Premier League games.",
-                                         'GOAT_PLAYER': 'Gareth Bale is one the most impressive forwards of our generation, and his acrobatic kick against Stoke City in 2010 was legendary.'}
-),
-    'SET_TEAM_KEY_MANAGER': MacroGPTJSON("What team is the user interested in? What are two key management decisions that resulted in a significant increase in wins for the team?",
-                                        {'TOP_TEAM': "Tottenham Hotspurs",
-                                         'KEY_DECISION_1': "Hiring Mauricio Pochettino: In 2014, Tottenham Hotspur hired Mauricio Pochettino as their manager. Pochettino brought a new style of play to the team, focusing on high-pressing and quick transitions. He also implemented a strong team culture, with a focus on hard work, discipline, and teamwork. Under Pochettino's leadership, Tottenham Hotspur achieved their highest-ever Premier League finish in the 2015-16 season, finishing third and qualifying for the Champions League.",
-                                         'KEY_DECISION_2': "Signing key players: Tottenham Hotspur has also made several key signings in recent years that have contributed to their success on the pitch. One notable example is the signing of Harry Kane, a prolific striker who has been instrumental in the team's attack. Other important signings include Dele Alli, Christian Eriksen, and Son Heung-min, who have all played key roles in the team's success."}),
+                                 "Give three biased reasons why Manchester City is superior than the user's favorite team. "
+                                 "If their favorite team is different, be condescending.",
+                                 {'USER_FAV_TEAM': "Arsenal",
+                                  'REASON1': "They have strong attacking plays that are fun to watch.",
+                                  'REASON2': "They always have the mindset of a champion and win important matches.",
+                                  'REASON3': "Especially when they have a lead, the defense is stellar."}),
+    'SET_FAV_PLAYER': MacroGPTJSON(
+        "Who is the speaker's favorite soccer player? Give the most recent Premier League game the player has played in.",
+        {'USER_FAV_PLAYER': "Marcus Rashford",
+         'DATE': "2022-03-04",
+         'TEAM1': "Manchester United",
+         'TEAM2': "Tottenham"}),
+    'SET_KEY_OBS_FAV_PLAYER': MacroGPTJSON(
+        "Who is the speaker's favorite soccer player? Get the most recent game the favorite player has played in the Premier League. Give the key observations of the game and get the final score.",
+        {'USER_FAV_PLAYER': "Marcus Rashford",
+         'FINAL_SCORE': "This is the game where Manchester United won 3-1.",
+         "KEY_OBS_1": "Marcus Rashford scored the most crucial goal of the game.",
+         "KEY_OBS_2": "Casemiro scored the first goal, which set the pace of the game.",
+         "KEY_OBS_3": "Casemiro was assisted by Shaw to score the goal."
+         }),
+    'SET_TEAM_KEY_PLAYERS': MacroGPTJSON(
+        "What team is the user interested in? Who are the top two key players on the team currently, and why? Who is the top player of all time on the team historically, and why? Give a passionate answer.",
+        {'TOP_TEAM': "Tottenham Hotspurs",
+         'KEY_PLAYER_1': "Harry Kane is the most crucial forward because he converts the shots in goals.",
+         'KEY_PLAYER_2': "With strong command of his penalty area and the goal line, Hugo Lloris  kept 34 clean sheets in 100+ Premier League games.",
+         'GOAT_PLAYER': 'Gareth Bale is one the most impressive forwards of our generation, and his acrobatic kick against Stoke City in 2010 was legendary.'}
+        ),
+    'SET_TEAM_KEY_MANAGER': MacroGPTJSON(
+        "What team is the user interested in? What are two key management decisions that resulted in a significant increase in wins for the team?",
+        {'TOP_TEAM': "Tottenham Hotspurs",
+         'KEY_DECISION_1': "Hiring Mauricio Pochettino: In 2014, Tottenham Hotspur hired Mauricio Pochettino as their manager. Pochettino brought a new style of play to the team, focusing on high-pressing and quick transitions. He also implemented a strong team culture, with a focus on hard work, discipline, and teamwork. Under Pochettino's leadership, Tottenham Hotspur achieved their highest-ever Premier League finish in the 2015-16 season, finishing third and qualifying for the Champions League.",
+         'KEY_DECISION_2': "Signing key players: Tottenham Hotspur has also made several key signings in recent years that have contributed to their success on the pitch. One notable example is the signing of Harry Kane, a prolific striker who has been instrumental in the team's attack. Other important signings include Dele Alli, Christian Eriksen, and Son Heung-min, who have all played key roles in the team's success."}),
 
-    #UNFAMILIAR MACROS
+    # UNFAMILIAR MACROS
     'SET_INTERESTED': MacroGPTJSON('Do you think the user is interested in knowing more?',
-        {V.interested.name: ["true", "false"]}
-    ),
+                                   {V.interested.name: ["true", "false"]}
+                                   ),
     'GET_INTERESTED': MacroGetInterested()
 }
+
 
 def start_transition() -> DialogueFlow:
     transitions = {
         'state': 'start',
         '`Welcome! I am dEPLoyer, English Premier League Chatbot. What\'s your name?`': {
-            '#GET_NAME' : {
+            '#GET_NAME': {
                 # If previous visitor, direct to familiar state.
                 # Else, give pop quiz and cache current visit.
-                '#IF(#VISITED_BEFORE)` Welcome back.`' : 'new_familiar',
+                '#IF(#VISITED_BEFORE)` Welcome back.`': 'new_familiar',
                 '`Nice to meet you. `#STORE_VISIT': 'pop_quiz'
             }
         }
@@ -323,7 +334,7 @@ def start_transition() -> DialogueFlow:
     df.load_transitions(team_state)
     df.add_macros(macros)
 
-    #UNFAMILIAR DIALOGUE
+    # UNFAMILIAR DIALOGUE
     df.load_transitions(unfamiliar)
     df.load_transitions(player_recommendation)
     df.load_transitions(rashford_rec)
@@ -336,21 +347,22 @@ def start_transition() -> DialogueFlow:
 
     return df
 
+
 pop_quiz_transition = {
     'state': 'pop_quiz',
-    '`Quick pop quiz. What team is Harry Kane on currently?`' : {
+    '`Quick pop quiz. What team is Harry Kane on currently?`': {
         '[{tottenham, hotspur, spur, hotspurs, spurs, lilywhites}]': {
             '`Yep! What team is Mohamed Salah playing for currently?`': {
                 '[{liverpool, liverpool fc, liverpool f.c., the reds}]': {
                     '`Wow! You must have some knowledge in soccer. Let\'s get started!`': 'new_familiar'
                 },
                 'error': {
-                    '`Oops, you got that wrong. That\'s fine, not everyone is into football.`' : 'unfamiliar'
+                    '`Oops, you got that wrong. That\'s fine, not everyone is into football.`': 'unfamiliar'
                 }
             }
         },
         'error': {
-            '`Oops, you got that wrong. That\'s fine, not everyone is into football.`' : 'unfamiliar'
+            '`Oops, you got that wrong. That\'s fine, not everyone is into football.`': 'unfamiliar'
         }
     }
 }
@@ -360,7 +372,7 @@ continue_conversation_state = {
     '`Do you want to continue the conversation?`': {
         '[{yes, sure, yeah, yea, okay, ok}]': 'new_familiar',
         '[{no, nope, nah}]': {
-            '`Okay, hope you enjoyed!`': 'end' #TODO: add evaluation state
+            '`Okay, hope you enjoyed!`': 'end'  # TODO: add evaluation state
         },
         'error': {
             '`I don\'t understand you.`': 'end'
@@ -388,7 +400,7 @@ continue_explain_stats_state = {
             }
         },
         'error': {
-                    '`I don\'t know about that statistic.`': 'end'
+            '`I don\'t know about that statistic.`': 'end'
         }
     }
 }
@@ -401,7 +413,7 @@ continue_explain_stats_state2 = {
         },
         '[{no, nope, nah}]': 'cont_convo',
         'error': {
-                    '`I don\'t know about that statistic.`': 'end'
+            '`I don\'t know about that statistic.`': 'end'
         }
     }
 }
@@ -439,7 +451,7 @@ key_statistics_state = {
 key_observations_state = {
     'state': 'key_observations',
     '`Sure, I can help you with that. What match do you want to talk about?`': {
-        '#SET_KEY_OBSERVATIONS #SET_KEY_STATISTICS' : {
+        '#SET_KEY_OBSERVATIONS #SET_KEY_STATISTICS': {
             '` Here are the key observations: `#GET_KEY_OBSERVATIONS` \n'
             'Do you want to talk about the key statistics of the game?`': {
                 '[{yes, sure, yeah, yea, okay, ok}]': {
@@ -466,14 +478,12 @@ key_observations_state = {
     }
 }
 
-
-
 favorite_team_state = {
     'state': 'favorite_team',
     '`My favorite team is Manchester City. What\'s yours?`': {
-        '#SET_FAV_TEAM' : {
+        '#SET_FAV_TEAM': {
             '` Man City will always be my team. `$REASON1`\n`$REASON2`\n`$REASON3` '
-            'Do you want to talk`about `$USER_FAV_TEAM`\'s specific match or team?' : {
+            'Do you want to talk`about `$USER_FAV_TEAM`\'s specific match or team?': {
                 '[match]': {
                     '`For matches, I can talk about key statistics or key observations. What do you want to talk about?`': {
                         '[{statistics, statistic}]': 'key_stats',
@@ -497,9 +507,9 @@ favorite_team_state = {
 favorite_player_state = {
     'state': 'favorite_player',
     '`My favorite player is Ronaldo, the greatest football player alive. Who\'s yours?`': {
-        '#SET_FAV_PLAYER #SET_KEY_OBS_FAV_PLAYER' : {
+        '#SET_FAV_PLAYER #SET_KEY_OBS_FAV_PLAYER': {
             '` I watched `$USER_FAV_PLAYER` in his most recent game between `$TEAM1` and `$TEAM2`. \nThere\'s some cool'
-            ' moments in that game. \nActually, do you wanna know some key observations I made about the game?`' : {
+            ' moments in that game. \nActually, do you wanna know some key observations I made about the game?`': {
                 '[{yes, sure, yeah, yea, okay, ok}]': {
                     '` `$FINAL_SCORE` \n`$KEY_OBS_1` \n`$KEY_OBS_2` \n`$KEY_OBS_3` \n`': 'cont_convo'
                 },
@@ -518,7 +528,7 @@ favorite_player_state = {
 team_key_players_state = {
     'state': 'team_key_players',
     '`Sure, I can do that for you. Which team do you wanna talk about?`': {
-        '#SET_TEAM_KEY_PLAYERS #SET_TEAM_KEY_MANAGER' : {
+        '#SET_TEAM_KEY_PLAYERS #SET_TEAM_KEY_MANAGER': {
             '` Here\'s my take on `$TOP_TEAM` \'s players. \n`$KEY_PLAYER_1` \nAlso, `$KEY_PLAYER_2` \nBut `$GOAT_PLAYER`\n'
             'Did you want to talk about the key management plays?`': {
                 '[{yes, sure, yeah, yea, okay, ok}]': {
@@ -575,7 +585,7 @@ new_familiar = {
                 }
             }
         },
-        '[favorite, team]' : 'favorite_team',
+        '[favorite, team]': 'favorite_team',
         '[favorite, player]': 'favorite_player',
         '[!-favorite, team]': 'team_state',
         'error': 'end'
@@ -586,7 +596,7 @@ new_familiar = {
 
 unfamiliar = {
     'state': 'unfamiliar',
-    '`Manchester United is part of EPL.  The Premier League was founded in 1992, '
+    '`Well, I specialized in English Premier League. I hope I can give you some information about EPL. The Premier League was founded in 1992, '
     'replacing the First Division as the top tier of English football. Does this sound interesting to you?`': {
         '[yes]': {
             '`Great! Let\'s start with one of the most successful teams in the EPL historically! Manchester United is one of the most successful teams in the English Premier League. The famous player '
@@ -613,15 +623,15 @@ unfamiliar = {
                                                 },
                                             }
                                         },
-                                             '#IF($INTERESTED=false)': 'fun_fact'
-                                    },
                                         '#IF($INTERESTED=false)': 'fun_fact'
+                                    },
+                                    '#IF($INTERESTED=false)': 'fun_fact'
                                 }
                             }
                         },
 
                     },
-                        '#IF($INTERESTED=false)': 'fun_fact'
+                    '#IF($INTERESTED=false)': 'fun_fact'
                 },
                 '#IF($INTERESTED=false)': 'fun_fact'
             }
@@ -649,9 +659,9 @@ rashford_rec = {
     'state': 'rashford_rec',
     '`In fact, if football was a video game, Marcus would be the cheat code that everyone wants to unlock. `': {
         '#SET_INTERESTED #GET_INTERESTED': {
-            '#IF($INTERESTED=true)`Rashford appeared 233 times in this season and had 74 goals. He is absolutely one of the heated players. Do you want to look at some of his game stats?`':{
+            '#IF($INTERESTED=true)`Rashford appeared 233 times in this season and had 74 goals. He is absolutely one of the heated players. Do you want to look at some of his game stats?`': {
                 '[yes]': {
-                    '`stats Speaking of this, I am a big fan of Manchester United as well. Do you think you would like Manchester United? Manchester United is a team with a rich history and a tradition of excellence.'
+                    '`He scored 15 goals and 4 assists out of his 29 appearances this season. His goal rate, shots on target, and expected goals are top 1% in the league per 90 minutes. Stats speaking of this, I am a big fan of Manchester United as well. Do you think you would like Manchester United? Manchester United is a team with a rich history and a tradition of excellence Speaking of this, I am a big fan of Manchester United as well. Do you think you would like Manchester United? Manchester United is a team with a rich history and a tradition of excellence.'
                     'If you want to support a team that has consistently been among the best in the world, then Manchester United is a great choice.`': {
                         '[yes]': {
                             '`You know what, they are gonna meet their long-time enemy team Chelsea! The rivalry between Manchester United'
@@ -677,101 +687,100 @@ kane_rec = {
     '`Despite his success on the field, Harry Kane remains humble and grounded.`': {
         '#SET_INTERESTED #GET_INTERESTED': {
             '#IF($INTERESTED=true) `Harry Kane appeared 313 times and had 206 goals. You can call him one of the most successful commissioned players. Do you want to know how he performed?`': {
-                    '[yes]': {
-                        '`stats Tottenham Hotspur is viral these days! Some of their players made wonderful performance at the World Cup.'
-                        'I personally like this team a lot! Do you think you would like it?`': {
-                            '[yes]': {
-                                '`Great haha another Hotspur fan! Their next game is with team New Castle. I somehow think that New Castle has a decent ranking (they exceeds Hotspur sometime these days!) because they made lots of draws.'
-                                'Last time when they met, New Castle had 2 and Tottenham Hotspur had 1. What do you think will be their next score?`': {
-                                    '#UNX': {
-                                        '`I would just say they will have another draw. From my perspective, New Castle is known for fast-paced games but Tottenham Hotspur'
-                                        'plays possession-based games and has won two league titles. Who knows haha!`': 'personal_story'
-                                    },
-                                }
-                            },
-                            '[no]': 'team_recommendation'
-                        }
-                    },
-                    '[no]': 'player_recommendation'
+                '[yes]': {
+                    '`Harry Kane boasts 24 goals and 2 assists. His goals expected, goals on target, and passes were within top 5%! Tottenham Hotspur is viral these days! Some of their players made wonderful performance at the World Cup. Tottenham Hotspur is viral these days! Some of their players made wonderful performance at the World Cup.'
+                    'I personally like this team a lot! Do you think you would like it?`': {
+                        '[yes]': {
+                            '`Great haha another Hotspur fan! Their next game is with team New Castle. I somehow think that New Castle has a decent ranking (they exceeds Hotspur sometime these days!) because they made lots of draws.'
+                            'Last time when they met, New Castle had 2 and Tottenham Hotspur had 1. What do you think will be their next score?`': {
+                                '#UNX': {
+                                    '`I would just say they will have another draw. From my perspective, New Castle is known for fast-paced games but Tottenham Hotspur'
+                                    'plays possession-based games and has won two league titles. Who knows haha!`': 'personal_story'
+                                },
+                            }
+                        },
+                        '[no]': 'team_recommendation'
+                    }
                 },
-            '#IF($INTERESTED=false)': 'personal_story'
+                '[no]': 'player_recommendation'
             },
+            '#IF($INTERESTED=false)': 'personal_story'
+        },
 
-        }
     }
-
+}
 
 de_bruyne_rec = {
     'state': 'de_bruyne_rec',
-    '`He is such an outstanding player!`': {
+    '``': {
         '#SET_INTERESTED #GET_INTERESTED': {
-            '#IF($INTERESTED=true)`De Bruyne appeared almost 240 times in the premier league and had 101 assists! He created 160 big chances for his teamates. Truly, he is on top of his league. Do you want to know more about how he performed?`': {
+            '#IF($INTERESTED=true)': {
+                '`De Bruyne appeared almost 240 times in the premier league and had 101 assists! He created 160 big chances for his teamates. Truly, he is on top of his league. Do you want to know more about how he performed?`': {
                     '[yes]': {
-                        '`stats Manchester City is truly one of the strongest team in all of Europe! However, even this team is impacted by whether De Bruyne is playing or not.'
-                        'In other words, he is the focal point of the playstyle of Manchester City that highlights possession which requires good passing. I like the style of Manchester City a lot! Do you think you would like this team?`': {
+                        '`De Bruyne has 5 goals and 15 assissts. He is the number one player in assists, key passes, and crosses. Manchester City is truly one of the strongest team in all of Europe! However, even this team is impacted by whether De Bruyne is playing or not.'
+                        'In other words, he is the focal point of the playstyle of Manchester United that highlights possession which requires good passing!`': {
                             '[yes]': {
-                                '`Good choice for you since Manchester City really made the history of English Premier League and as I recalled, they rank at the second place.'
-                                ' Their next game is with Arsenal and dude! That\'s gonna be such a tough game since Arsenal currenly rank the first. And let me tell you, I don\'t buy it. Anyways, Arsenal did win 13 league titles.'
-                                'It\'s gonna be very hard for Manchester City but I count on their quick and incisive passing to break down opposition defenses. What do you think, who between them will win?`': {
-                                    '#UNX': {
-                                        '`Though as a big fan of Manchester City, Arsenal has indeed been the top one for a while. Maybe Mamchester City will lose this time.`': 'personal_story'
-                                    }
-                                }
+                                'cool': 'end'
                             },
                             '[no]': 'team_recommendation'
                         }
                     },
                     '[no]': 'player_recommendation'
-                },
-                '#IF($INTERESTED=false)': 'personal_story'
+                }
             },
+            '#IF($INTERESTED=false)': 'player_recommendation'
         }
     }
-
+}
 
 kante_rec = {
     'state': 'kante_rec',
-    '`He is a star!`': {
+    '``': {
         '#SET_INTERESTED #GET_INTERESTED': {
-            '#IF($INTERESTED=true) `Kante appeared around 230 games in the premier league. He made a staggering 505 interceptions and 1685 recoveries, which means he did astonishingly well in recovering the ball! Do you want to know more about how he performed?`': {
+            '#IF($INTERESTED=true)': {
+                '`Kante appeared around 230 games in the premier league. He made a staggering 505 interceptions and 1685 recoveries, which means he did astonishingly well in recovering the ball! Do you want to know more about how he performed?`': {
                     '[yes]': {
-                        '`stats Chelsea historically has a very strong performance! Although Kante is not the type of player that gets the spotlight, Chelsea holds differently whenever Kante is playing for them'
-                        'When he plays, there\'s always a stability to Chelsea that makes them look very hard to beat! Chelsea is known for its passionate fans and iconic blue jerseys. Do you think you will like Chelsea?`': {
+                        '`Kante didn\'t play much this season due to his recent injuty, but Chelsea historically has a very strong performance! Although Kante is not the type of player that gets the spotlight, Chelsea holds differently whenever Kante is playing for them'
+                        'When he plays, there\'s always a stability to Chelsea that makes them look very hard to beat!`': {
                             '[yes]': {
-                                '`Yay! Chelsea\'s next game is with Bretford. Surprisingly, during their recent games, Chelsea had exactly one wining, one loss, and one draw.'
-                                'Chelsea\'s manager Thomas Tuchel really knows how to operate the teams and led the team to their recent success. But Bretford is known for using good data analytics. Who do you think will win?`': {
-                                    '#UNX': {
-                                        '`I would say, let\'s see, that Bretford would win. I recalled that Bretford won 4-1 to Chelsea, just last year in April. Uhh, bad memory. Anyways.`': 'personal_story'
-                                    },
-                                }
+                                'cool': 'end'
                             },
                             '[no]': 'team_recommendation'
                         }
                     },
                     '[no]': 'player_recommendation'
-                },
-            '#IF($INTERESTED=false)': 'personal_story'
+                }
             },
+            '#IF($INTERESTED=false)': 'player_recommendation'
         }
     }
-
+}
 personal_story = {
     'state': 'personal_story',
-    '#GATE`You know I remember I never wanted to do any exercise before I watched EPL. After watching that I found it really cool to just run freely on the field and even sweating makes me feel happy!`':{
-        '/.*/':{
-            '`Haha, you know how people say soccer really cheers people up. That is exactly what I feel. Speaking of that, i want to share this video with you. I really feel the same.`':'video'
+    '#GATE`You know I remember I never wanted to do any exercise before I watched EPL. After watching that I found it really cool to just run freely on the field and even sweating makes me feel happy!`': {
+        '/.*/': {
+            '`Haha, you know how people say soccer really cheers people up. That is exactly what I feel. Speaking of that, i want to share this video with you. I really feel the same.`': 'video'
         }
     },
-    '#GATE `I once had a big fight with my dad because he really thought Arsenal would win but I thought Manchester City would win the champion. I mean I got it right. But we ended up just having a wonderful time watching the final together with beer and barbecue! It was such a wonderful time!':'fun_fact'
+    '#GATE `I once had a big fight with my dad because he really thought Arsenal would win but I thought Manchester City would win the champion. I mean I got it right. But we ended up just having a wonderful time watching the final together with beer and barbecue! It was such a wonderful time!': 'fun_fact'
 }
 
 team_recommendation = {
     'state': 'team_recommendation',
     '#GATE `Do you want to hear about the teams in Premier League then? `': 'end'
 }
-fun_fact={
-    'state':'fun_fact',
-    '`fun facts`':'end'
+fun_facts = {
+    'state': 'fun_fact',
+    '#GATE `A lot of bizarre things happen in the league. A former Manchester United player Ashley Young, when playing against Swansea City in 2014 was caught in the camera for eating bird poop that fell down from the sky. He is still denying the incident!`': 'end',
+    '#GATE `There are some funny incidents about premier league players in national events as well. In the world cup, English player and former Tottenham player Gary Lineker once pooped during the game. He was caught in camera rubbing on the grass to distinguish evidence. He admitted this funny incident on TV.`': 'end',
+    '#GATE `Arsenal and Tottenham games are very famous for being intense. They call it the London Derby since both Tottenham and Arsenal are based in London. But did you know that Harry Kane once was in the Arsenal youth academy? The Arsenal youth academy eventually released him for being too chubby at that time.`': 'end'
+}
+
+end_state = {
+    'state': 'end_state',
+    '/.*/': {
+        '`haha I know it\'s pretty funny right`': 'end'
+    },
 }
 
 
@@ -780,6 +789,7 @@ def save(df: DialogueFlow, varfile: str):
     d = {k: v for k, v in df.vars().items() if not k.startswith('_')}
     pickle.dump(d, open(varfile, 'wb'))
 
+
 def load(df: DialogueFlow, varfile: str):
     if os.path.exists(varfile):
         d = pickle.load(open(varfile, 'rb'))
@@ -787,5 +797,6 @@ def load(df: DialogueFlow, varfile: str):
     openai.api_key_path = utils.OPENAI_API_KEY_PATH
     df.run()
     save(df, varfile)
+
 
 load(start_transition(), 'resources/visits.pkl')
